@@ -1,18 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
-    <title>El Pollo Loco</title>
-    <script src="js/game.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="shortcut icon" href="./img_pollo_locco/img/3_enemies_chicken/chicken_small/1_walk/1_w.png" type="image/x-icon" />
+
+  <script src="./models/ImageHub.class.js"></script>
+  <script src="./models/drawable-object.class.js"></script>
+  <script src="./models/movable-object.class.js"></script>
+  <script src="./models/coins.class.js"></script>
+  <script src="./models/interval-hub.class.js"></script>
+  <script src="./models/bottles.class.js"></script>
+  <script src="./models/character.class.js"></script>
+  <script src="./models/chicken.class.js"></script>
+  <script src="./models/chicks.class.js"></script>
+  <script src="./models/endboss.class.js"></script>
+  <script src="./models/cloud.class.js"></script>
+  <script src="./models/background-object.class.js"></script>
+  <script src="./models/statusbar-boss.class.js"></script>
+  <script src="./models/statusbar-coins.class.js"></script>
+  <script src="./models/statusbar-bottles.class.js"></script>
+  <script src="./models/statusbar.class.js"></script>
+  <script src="./models/level.class.js"></script>
+  <script src="./levels/level1.js"></script>
+  <script src="./models/world.class.js"></script>
+  <script src="./models/audiohub.class.js"></script>
+  <script src="./models/keyboard.class.js"></script>
+  <script src="./models/throwable-object.class.js"></script>
+  <script src="js/mobile-controls.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+
+  <title>El Pollo Loco</title>
 </head>
+
 <body>
-    <h1>El pollo loco</h1>
+  <h1>( El Pollo Loco )</h1>
 
-    <canvas width="720" height="480">
+  <div class="game-screen">
+    <div class="canvas-container">
+      <canvas id="gameCanvas" class="game-canvas" width="720" height="480"></canvas>
 
-    </canvas>
-    
+      <div id="loosingScreen" class="loosing-screen d-none">
+        <img class="win-loose-img" src="./img_pollo_locco/img/You won, you lost/Game over A.png" />
+        <div class="btn-container">
+          <button class="game-btn" onclick="restartGame()">Restart</button>
+          <button class="game-btn" onclick="goHome()">Home</button>
+        </div>
+      </div>
+
+      <div id="winningScreen" class="winning-screen d-none">
+        <img class="win-loose-img" src="./img_pollo_locco/img/You won, you lost/You Win A.png" />
+        <div class="btn-container">
+          <button class="game-btn" onclick="restartGame()">Restart</button>
+          <button class="game-btn" onclick="goHome()">Home</button>
+        </div>
+      </div>
+
+      <button id="muteBtn" class="mute-btn d-none" onclick="toggleMute()">
+        🔊
+      </button>
+      <button id="restartBtn" class="d-none restart-btn" onclick="restartGame()">
+        🔄
+      </button>
+      <button id="homeBtn" class="d-none home-btn" onclick="goHome()">
+        🛖
+      </button>
+      <button id="fullScreenBtn" class="d-none fullscreen-btn" onclick="goFullscreen()">
+        📺
+      </button>
+      <button id="startBtn" class="start-btn" onclick="startGame()" disabled style="opacity: 0.5; cursor: wait;">
+        play
+      </button>
+      <div id="canvasMenuReplika" class="canvas-menu-replika d-none">
+        <button class="btn-small" onclick="openImpressum()">imprint</button>
+        <button class="btn-small" onclick="openDialog()">instructions</button>
+      </div>
+      <button id="toggleControlsBtn" class="cntrl-btn d-none" onclick="toggleMobileControls()">
+        🎮
+      </button>
+
+      <div class="mobile-controls ">
+        <div class="left-controls">
+          <button id="btnLeft" class="mobile-btn">◀</button>
+          <button id="btnRight" class="mobile-btn">▶</button>
+        </div>
+        <div class="right-controls">
+          <button id="btnJump" class="mobile-btn">▲</button>
+          <button id="btnThrow" class="mobile-btn">
+            <img class="btn-img" src="./img_pollo_locco/img/6_salsa_bottle/salsa_bottle.png" alt="Throw" />
+          </button>
+        </div>
+      </div>
+
+      <div class="device-lock">Please turn your device</div>
+    </div>
+  </div>
+
+  <div class="menu">
+    <button class="btn" onclick="openImpressum()">imprint</button>
+    <button class="btn" onclick="openDialog()">instructions</button>
+  </div>
+
+  <dialog id="impressumDialog" class="impressum-dialog">
+    <header class="dialog-header">
+      <button class="btn-dialog" onclick="closeDialogImpressum()">x</button>
+    </header>
+    <h2>Imprint</h2>
+    <p>Information according to § 5 TMG (Telemedia Act)</p>
+    <br />
+    <address>
+      <p>
+        Kelly Kornetzki<br />
+        In der Hut 10a<br />
+        91083 Baiersdorf<br />
+        Germany
+      </p>
+    </address>
+    <br />
+
+    <p class="dialog-row"><span>Represented by:</span> <span>Kelly Kornetzki</span></p>
+    <p class="dialog-row"><span>Email:</span> <a href="mailto:contact@kelly-kornetzki.de">contact@kelly-kornetzki.de</a></p>
+
+    <br />
+    <p>Consumer dispute resolution / Universal arbitration body</p>
+    <p>
+      We do not participate in dispute resolution proceedings before a
+      consumer arbitration board and are not obliged to do so.
+    </p>
+    <br />
+
+    <p class="dialog-row"><span>Imprint generated by:</span> <a href="https://impressum-generator.de" rel="dofollow">Impressum-Generator.de</a></p>
+    <p class="dialog-row"><span>Powered by:</span> <a href="https://www.kanzlei-hasselbach.de/" rel="nofollow">Franziska Hasselbach, Bonn</a></p>
+
+    <br />
+    <hr />
+    <br />
+
+    <p class="dialog-row"><span>Music by:</span> <a href="https://pixabay.com/de/users/drippeados-44473605/">Kevin Llanes</a><span> from Pixabay</span></p>
+    <p class="dialog-row"><span>Sound Effect by:</span> <a href="https://pixabay.com/de/users/alex_jauk-16800354/">Alexander Jauk</a><span> from Pixabay</span></p>
+    <p class="dialog-row"><span>Sound Effect by:</span> <a href="https://pixabay.com/de/users/nematoki-32544028/">Darina Evstafeva</a><span> from Pixabay</span></p>
+  </dialog>
+
+  <dialog id="instructionDialog">
+    <header class="dialog-header">
+      <button class="btn-dialog" onclick="closeDialog()">x</button>
+    </header>
+    <p>
+      Care not to get overrun by the crazy chickens<br />
+      defeat them by jumping on their heads <br />
+      Try to gather as many hot sauce bottles as you can ... you will need
+      them for el pollo loco!!!
+    </p>
+    <br />
+    <div class="icon-instructions">
+      <p class="dialog-row"><span>🔊</span> <span>Toggle the sounds</span></p>
+      <p class="dialog-row"><span>🎮</span> <span>Toggle mobile controls</span></p>
+      <p class="dialog-row"><span>📺</span> <span>Fullscreen mode</span></p>
+      <p class="dialog-row"><span>🔄</span> <span>Restart the game</span></p>
+    </div>
+    <br />
+    <div class="key-instruction-panel">
+      <p>
+        <img class="img-dialog" src="./img_pollo_locco/img/instruction_dialog/arrow-back.png" alt="" />
+        /
+        <img class="img-dialog" src="./img_pollo_locco/img/instruction_dialog/arrow-right.png" alt="" />
+        : move left/ move right
+      </p>
+
+      <p>
+        <img class="img-dialog" src="./img_pollo_locco/img/instruction_dialog/space.png" alt="" />
+        : jump
+      </p>
+      <p>
+        <img class="img-dialog" src="./img_pollo_locco/img/instruction_dialog/letter-d.png" alt="" />
+        : throw bottle
+      </p>
+    </div>
+  </dialog>
 </body>
+
 </html>
