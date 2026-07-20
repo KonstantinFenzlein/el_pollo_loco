@@ -1,9 +1,523 @@
-body {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+/* ==============================
+   Global Reset
+============================== */
+* {
+  position: relative;
+  padding: 0;
+  margin: 0;
+  text-decoration: none;
+  list-style: none;
+  box-sizing: border-box;
+  scroll-behavior: smooth;
+  font-size: inherit;
+  /* color: inherit; */
 }
 
-canvas {
-    background-color: black;
+/* ==============================
+   Body & Layout
+============================== */
+body {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  margin: 0;
+  background-image: url(img_pollo_locco/img/background/desert.png);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  font-family: "riogrande", Arial, Helvetica, sans-serif;
+}
+
+/* ==============================
+   Fonts
+============================== */
+@font-face {
+  font-family: "riogrande";
+  src: url("fonts/riogrande.ttf");
+}
+
+/* ==============================
+   Headings
+============================== */
+h1 {
+  color: #9c5328;
+  font-size: clamp(50px, 5vw, 120px);
+  letter-spacing: 3px;
+  text-shadow: 8px, 8px, 8px rgba(0, 0, 0, 0.5);
+}
+
+/* ==============================
+   Buttons
+============================== */
+.btn,
+.btn-dialog,
+.start-btn,
+.mobile-btn, .game-btn {
+  font-family: "riogrande";
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn {
+  padding: 15px 30px;
+  font-size: 24px;
+  z-index: 2;
+  background-color: #9c5328;
+  color: #f2eac0;
+}
+
+.btn:hover {
+  background-color: #f2eac0;
+  color: #9c5328;
+  transform: scale(1.1);
+}
+
+.start-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 15px 30px;
+  font-size: 24px;
+  z-index: 10;
+  background-color: #f0ebc1;
+  color: #9c5328;
+}
+
+.start-btn:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+  color: #9c5328;
+}
+
+.btn-dialog {
+  padding: 5px 10px;
+  font-size: 24px;
+  z-index: 2;
+  background-color: #9c5328;
+  color: white;
+}
+
+.btn-dialog:hover {
+  background-color: #f0ebc1;
+  color: #9c5328;
+  transform: scale(1.1);
+}
+
+.game-btn{
+  padding: clamp(8px, 2vw, 15px) clamp(15px, 4vw, 30px);
+  font-size: clamp(16px, 3vw, 24px);
+  z-index: 10;
+  background-color: #f0ebc1;
+  color: #9c5328;
+
+  &:hover{
+    transform: scale(1.1);
+    color: #9c5328;
+  }
+}
+
+.btn-container{
+  display: flex;
+  gap: 20px;  
+  justify-content: center;
+  align-items: center;
+  padding-bottom: 20px;
+  }
+
+/* ==============================
+   Menu
+============================== */
+.btn-small {
+  font-family: "riogrande";
+  cursor: pointer;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 15px;
+  font-size: 14px; 
+  background-color: #9c5328;
+  color: #f2eac0;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  z-index: 30;
+}
+
+.btn-small:hover {
+  background-color: #f2eac0;
+  color: #9c5328;
+  transform: scale(1.05);
+}
+
+.canvas-menu-replika {
+  position: absolute;
+  bottom: 18%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 15px;
+  z-index: 25;
+}
+
+.d-none {
+  display: none; 
+}
+
+.menu {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+/* ==============================
+   Canvas & Game
+============================== */
+.canvas-container {
+  position: relative;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.canvas-container:fullscreen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: black;
+}
+
+.game-canvas {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background-color: black;
+  background-image: url(./img_pollo_locco/img/9_intro_outro_screens/start/startscreen_1.png);
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  display: block;
+  border-radius: 15px;
+  max-height: 80vh;
+}
+
+/* ==============================
+   Dialogs
+============================== */
+dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 3px solid #9c5328;
+  border-radius: 12px;
+  padding: 20px;
+  background-color: #f1efd8;
+  font-size: 22px;
+  letter-spacing: 1px;
+}
+
+dialog::backdrop {
+  background: rgba(0, 0, 0, 0.445);
+}
+
+.dialog-header {
+  width: 100%;
+  display: flex;
+  justify-content: end;
+}
+
+.impressum-dialog {
+  font-family: "Courier New", Courier, monospace;
+  font-size: clamp(14px, 1.2vw + 0.5rem, 18px); 
+  line-height: 1.4; 
+  max-width: 90vw;  
+  max-height: 80vh; 
+  overflow-y: auto;
+}
+
+.impressum-dialog h2 {
+  font-size: clamp(18px, 2vw, 24px);
+  margin-bottom: 10px;
+  color: #9c5328;
+}
+
+.impressum-dialog address p, 
+.impressum-dialog p {
+  margin-bottom: 8px;
+}
+
+.dialog-row {
+  display: flex;
+  flex-wrap: wrap;    
+  column-gap: 8px;    
+  row-gap: 2px;      
+  align-items: baseline;
+  margin-bottom: 8px; 
+}
+
+.dialog-row span:first-child {
+  white-space: nowrap; 
+  font-weight: bold;   
+}
+
+.dialog-row a {
+  word-break: break-all; 
+  overflow-wrap: break-word;
+}
+
+/* ==============================
+   Control Buttons
+============================== */
+.mute-btn,
+.restart-btn,
+.home-btn,
+.fullscreen-btn,
+.cntrl-btn {
+  cursor: pointer;
+  position: absolute;
+  top: 0px;
+  z-index: 20;
+  background: none;
+  border: none;
+  font-size: 24px;
+  padding: 10px ;
+  font-size: 20px;
+  color: white;
+ 
+}
+
+.mute-btn {
+  right: 0px;
+}
+.restart-btn {
+  right: 30px;
+}
+.home-btn {
+  right: 60px;
+}
+.fullscreen-btn {
+  right: 90px;
+}
+.cntrl-btn {
+  right: 120px;
+}
+
+@media (max-height: 550px) {
+  .mute-btn,
+  .restart-btn,
+  .home-btn,
+  .fullscreen-btn,
+  .cntrl-btn {
+    font-size: 14px; 
+    padding: 0;
+    top: 5px;
+  }
+  .mute-btn { right: 5px; }
+  .restart-btn { right: 25px; }
+  .home-btn { right: 45px; }
+  .fullscreen-btn { right: 65px; }
+  .cntrl-btn { right: 85px; }
+}
+
+@media (max-height: 350px) {
+  .mute-btn,
+  .restart-btn,
+  .home-btn,
+  .fullscreen-btn,
+  .cntrl-btn {
+    font-size: 12px; 
+  }
+  .mute-btn { right: 3px; }
+  .restart-btn { right: 22px; }
+  .home-btn { right: 42px; }
+  .fullscreen-btn { right: 62px; }
+  .cntrl-btn { right: 82px; }
+}
+
+.mute-btn:hover,
+.restart-btn:hover,
+.home-btn:hover,
+.fullscreen-btn:hover,
+.cntrl-btn:hover {
+  transform: scale(1.1);
+}
+
+
+/* ==============================
+   Screens (Win / Lose)
+============================== */
+.loosing-screen,
+.winning-screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 100;
+  flex-direction: column;
+  gap: clamp(10px, 3vh, 20px);
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+.loosing-screen-fullscreen,
+.winning-screen-fullscreen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.win-loose-img {
+  width: clamp(200px, 60%, 500px);
+  height: auto;
+  max-width: 80%;
+  max-height: 80%;
+  object-fit: contain;
+}
+
+/* ==============================
+   Hints / Locks
+============================== */
+.rotate-hint {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 24px;
+  color: red;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 20px;
+  border-radius: 12px;
+  z-index: 9999;
+  text-align: center;
+}
+
+.device-lock {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  background-color: black;
+  color: white;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  z-index: 9999;
+  padding: 20px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.5s ease;
+}
+
+.device-lock.show {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* ==============================
+   Mobile Controls
+============================== */
+.mobile-controls {
+  position: absolute;
+  bottom: 20px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 20px;
+  pointer-events: auto;
+  z-index: 10;
+  touch-action: none;
+}
+
+.left-controls,
+.right-controls {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-img {
+  width: 30px;
+}
+
+.mobile-btn {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 45px;
+  height: 45px;
+  font-size: 26px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: white;
+  user-select: none;
+  touch-action: none;
+}
+
+.mobile-btn.active {
+  transform: scale(0.9);
+  opacity: 0.7;
+}
+
+/* ==============================
+   Key Instruction Panel
+============================== */
+.key-instruction-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+p {
+  display: flex;
+  align-items: center;
+}
+
+.img-dialog {
+  height: 50px;
+  width: 50px;
+}
+
+/* ==============================
+   Utility Classes
+============================== */
+.d-none {
+  display: none;
+}
+
+/* ==============================
+   Media Queries
+============================== */
+@media (max-width: 1000px) {
+  .game-screen {
+    width: clamp(100%, 100%, 720px);
+    display: flex;
+    justify-content: center;
+  }
+
+  h1 {
+    display: none;
+  }
+
+  canvas {
+    border-radius: 0;
+  }
+
+  .btn {
+    display: none;
+  }
+}
+
+@media (max-width: 800px) {
+  .game-screen {
+    width: clamp(100%, 100%, 720px);
+  }
 }
