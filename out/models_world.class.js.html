@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/world.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/world.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * class World
+ */
+
+  class World {
+    canvas;
+    ctx;
+    keyboard;
+    camera_x = 0;
+    character = new Character();
+    level = null;
+    throwObject = false;
+
+    throwabelObjects = [];
+    coins = [];
+    bottles = [];
+
+    statusbar = new Statusbar();
+    statusbarBoss = new StatusbarBoss();
+    statusbarBottle = new StatusbarBottle();
+    statusbarCoin = new StatusbarCoin();
+
+    constructor(canvas, keyboard, _level) {
+      this.level = _level;
+      this.ctx = canvas.getContext("2d");
+      this.canvas = canvas;
+      this.keyboard = keyboard;
+      this.draw();
+      this.setWorld();
+      this.run();
+      this.level.startLevel();
+    }
+
+    /** Links the character to this world. */
+    setWorld() {
+      this.character.world = this;
+    }
+
+    /** Starts the main game loops and collision checks. */
+    run() {
+      IntervalHub.startInterval(this.checkCollisions, 1000 / 60);
+      IntervalHub.startInterval(this.checkThrowObjects, 1000 / 60);
+      IntervalHub.startInterval(this.checkBottleCollisions, 1000 / 60);
+      IntervalHub.startInterval(this.checkBottleThrowCollisions, 1000 / 60);
+      IntervalHub.startInterval(this.checkCoinCollisions, 1000 / 60);
+      IntervalHub.startInterval(this.checkEndbossCollisions, 1000 / 60);
+      IntervalHub.startInterval(this.checkEndbossBottleCollision, 1000 / 60);
+      IntervalHub.startInterval(this.checkEndbossActivation, 1000 / 60);
+      IntervalHub.startInterval(() => {
+        this.level.endboss.forEach((boss) => boss.checkAttackState());
+      }, 1000 / 60);
+    }
+
+    /** Checks whether the player can throw a bottle and initiates it. */
+    checkThrowObjects = () => {
+      if (this.canThrow()) this.throwBottle();
+      else if (this.throwObject &amp;&amp; !this.keyboard.D) this.resetThrow();
+    };
+
+    /** Returns true if a bottle can be thrown. */
+    canThrow = () => {
+      const now = Date.now();
+      const timeSinceLastThrow = now - this.character.lastMove; 
+      const cooldown = 500;
+      return (
+        this.keyboard.D &amp;&amp; !this.throwObject &amp;&amp; this.character.bottleCount >= 1 &amp;&amp; timeSinceLastThrow > cooldown
+      );
+    };
+
+    /** Creates a new throwable object and adds it to the world. */
+    throwBottle = () => {
+      const direction = this.character.otherDirection ? -1 : 1;
+      const offsetX = direction === 1 ? 100 : -40;
+
+      const bottle = new ThrowableObject(
+        this.character.x + offsetX,
+        this.character.y + 100,
+        direction
+      );
+
+      this.throwObject = true;
+      this.throwabelObjects.push(bottle);
+      this.character.useBottle();
+    };
+
+    /** Resets throwObject flag after throwing. */
+    resetThrow = () => {
+      this.throwObject = false;
+    };
+
+    /** Checks collisions between character and enemies. */
+    checkCollisions = () => {
+      this.level.enemies.forEach((enemy) => {
+        if (enemy.dead || enemy.isDying) return;
+        if (this.character.isColliding(enemy)) {
+          if (this.character.isAboveGround() &amp;&amp; this.character.speedY &lt; 0)
+            enemy.die();
+          else {
+            this.character.hit();
+            this.statusbar.setPercentage(this.character.energy);
+          }
+        }
+      });
+    };
+
+    /** Checks collisions between character and endbosses. */
+    checkEndbossCollisions = () => {
+      this.level.endboss.forEach((boss) => {
+        if (this.character.isColliding(boss)) {
+          this.character.hit();
+          this.statusbar.setPercentage(this.character.energy);
+        }
+      });
+    };
+
+    /** Checks collisions between character and collectible bottles. */
+    checkBottleCollisions = () => {
+      this.level.bottles.forEach((bottle) => {
+        if (!bottle.collected &amp;&amp; this.character.isColliding(bottle)) {
+          bottle.collected = true;
+          this.character.collect();
+          this.statusbarBottle.setPercentage(
+            (this.character.bottleCount / 10) * 100
+          );
+        }
+      });
+    };
+
+    /** Checks collisions between character and collectible coins. */
+    checkCoinCollisions = () => {
+      this.level.coins.forEach((coin) => {
+        if (!coin.collected &amp;&amp; this.character.isColliding(coin)) {
+          coin.collected = true;
+          this.character.collectCoin();
+          this.statusbarCoin.setPercentage((this.character.coinCount / 10) * 100);
+        }
+      });
+    };
+
+    /** Checks collisions between thrown bottles and enemies. */
+    checkBottleThrowCollisions = () => {
+      this.throwabelObjects.forEach((bottle) => {
+        this.level.enemies.forEach((enemy) => {
+          if (enemy.dead || bottle.targetHit) return;
+          if (bottle.isColliding(enemy)) {
+            enemy.die();
+            bottle.startSplash();
+          }
+        });
+      });
+    };
+
+    /** Checks collisions between thrown bottles and endbosses. */
+    checkEndbossBottleCollision = () => {
+      this.throwabelObjects.forEach((bottle) => {
+        if (bottle.targetHit) return;
+
+        this.level.endboss.forEach((boss) => {
+          if (boss.dead) return;
+
+          if (bottle.isColliding(boss)) {
+            bottle.targetHit = true;
+            boss.hitBoss();
+            this.statusbarBoss.setPercentage(boss.energy);
+            bottle.startSplash();
+          }
+
+          if (boss.isDead()) this.killBossAfterDelay(boss);
+        });
+      });
+    };
+
+    /** Schedules endboss death after a short delay. */
+    killBossAfterDelay = (boss) => {
+      boss.isDying = true;
+      setTimeout(() => {
+        boss.dead = true;
+      }, 1500);
+    };
+
+    /** Activates endbosses when character reaches their activation point. */
+    checkEndbossActivation = () => {
+      this.level.endboss.forEach((boss) => {
+        if (!boss.isActive &amp;&amp; this.character.x >= boss.activationX)
+          boss.isActive = true;
+      });
+    };
+
+    /** Main drawing function called each frame. */
+    draw = () => {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      this.ctx.translate(this.camera_x, 0);
+
+      this.drawBackground();
+      this.ctx.translate(-this.camera_x, 0);
+      this.drawUI();
+      this.ctx.translate(this.camera_x, 0);
+      this.drawGameObjects();
+
+      this.ctx.translate(-this.camera_x, 0);
+
+      requestAnimationFrame(() => this.draw());
+    };
+
+    /** Draws background objects and clouds. */
+    drawBackground = () => {
+      this.addObjectsToMap(this.level.backgroundObjects);
+      this.addObjectsToMap(this.level.clouds);
+    };
+
+    /** Draws game objects: throwables, coins, bottles, enemies, endboss, character. */
+    drawGameObjects = () => {
+      this.addObjectsToMap(this.throwabelObjects.filter((b) => !b.splashed));
+      this.addObjectsToMap(this.level.coins);
+      this.addObjectsToMap(this.level.bottles);
+      this.addObjectsToMap(this.level.enemies.filter((e) => !e.dead));
+      this.addObjectsToMap(this.level.endboss.filter((b) => !b.dead));
+      this.addToMap(this.character);
+    };
+
+    /** Draws UI elements (health, bottles, coins, boss health). */
+    drawUI = () => {
+      this.addToMap(this.statusbar);
+      this.addToMap(this.statusbarBoss);
+      this.addToMap(this.statusbarBottle);
+      this.addToMap(this.statusbarCoin);
+    };
+
+    /** Adds an array of drawable objects to the canvas. */
+    addObjectsToMap(objects) {
+      objects.forEach((o) => {
+        if (!o.collected) this.addToMap(o);
+      });
+    }
+
+    /** Draws a single drawable object to the canvas, handling flips. */
+    addToMap(mo) {
+      if (mo.otherDirection) this.flipImage(mo);
+      mo.draw(this.ctx);
+      mo.drawFrame(this.ctx);
+      if (mo.otherDirection) this.flipImageBack(mo);
+    }
+
+    /** Flips a drawable object horizontally. */
+    flipImage(mo) {
+      this.ctx.save();
+      this.ctx.translate(mo.width, 0);
+      this.ctx.scale(-1, 1);
+      mo.x = mo.x * -1;
+      mo.realX = mo.realX * -1;
+    }
+
+    /** Restores flipped drawable object to original orientation. */
+    flipImageBack(mo) {
+      mo.x = mo.x * -1;
+      mo.realX = mo.realX * -1;
+      this.ctx.restore();
+    }
+  }</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AudioHub.html">AudioHub</a></li><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="Bottles.html">Bottles</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Chicks.html">Chicks</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coins.html">Coins</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="IntervalHub.html">IntervalHub</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="Statusbar.html">Statusbar</a></li><li><a href="StatusbarBoss.html">StatusbarBoss</a></li><li><a href="StatusbarBottle.html">StatusbarBottle</a></li><li><a href="StatusbarCoin.html">StatusbarCoin</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addButtonListeners">addButtonListeners</a></li><li><a href="global.html#bindButton">bindButton</a></li><li><a href="global.html#bindMobileControls">bindMobileControls</a></li><li><a href="global.html#checkAssetsAndEnableButton">checkAssetsAndEnableButton</a></li><li><a href="global.html#checkDeviceOrientation">checkDeviceOrientation</a></li><li><a href="global.html#clearCanvas">clearCanvas</a></li><li><a href="global.html#closeDialog">closeDialog</a></li><li><a href="global.html#closeDialogImpressum">closeDialogImpressum</a></li><li><a href="global.html#createLevel1">createLevel1</a></li><li><a href="global.html#getBoolean">getBoolean</a></li><li><a href="global.html#goFullscreen">goFullscreen</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#handleFullscreenChange">handleFullscreenChange</a></li><li><a href="global.html#handleLandscapeMode">handleLandscapeMode</a></li><li><a href="global.html#handlePortraitMode">handlePortraitMode</a></li><li><a href="global.html#hideLosingScreen">hideLosingScreen</a></li><li><a href="global.html#hideMobileControls">hideMobileControls</a></li><li><a href="global.html#hideStartButton">hideStartButton</a></li><li><a href="global.html#hideWinningScreen">hideWinningScreen</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initializeMuteButton">initializeMuteButton</a></li><li><a href="global.html#isMobileDevice">isMobileDevice</a></li><li><a href="global.html#openDialog">openDialog</a></li><li><a href="global.html#openImpressum">openImpressum</a></li><li><a href="global.html#restartGame">restartGame</a></li><li><a href="global.html#saveBoolean">saveBoolean</a></li><li><a href="global.html#showDesktopButtons">showDesktopButtons</a></li><li><a href="global.html#showGameControls">showGameControls</a></li><li><a href="global.html#showLockScreen">showLockScreen</a></li><li><a href="global.html#showLosingScreen">showLosingScreen</a></li><li><a href="global.html#showMobileControlsIfNeeded">showMobileControlsIfNeeded</a></li><li><a href="global.html#showWinningScreen">showWinningScreen</a></li><li><a href="global.html#startBackgroundMusic">startBackgroundMusic</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#toggleMobileControls">toggleMobileControls</a></li><li><a href="global.html#toggleMute">toggleMute</a></li><li><a href="global.html#updateMobileControlsVisibility">updateMobileControlsVisibility</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Mar 17 2026 11:59:27 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
