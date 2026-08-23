@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/game.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: js/game.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>let canvas;
+let ctx;
+let world;
+let keyboard = new Keyboard();
+let startImage = new Image();
+let isMuted = false;
+let isFullscreen = false;
+const lvl1 = level1;
+let isReadyToStart = false;
+
+/**
+ * Creates Level 1 with all enemies, objects, backgrounds, coins, and bottles.
+ * @returns {Level} The created level object.
+ */
+  function createLevel1() {
+    return new Level(
+      [
+        new Chicken(),
+        new Chicken(),
+        new Chicken(),
+        new Chicken(),
+        new Chicken(),
+        new Chicken(),
+        new Chicks(),
+        new Chicks(),
+        new Chicks(),
+        new Chicks(),
+        new Chicks(),
+        new Chicks(),
+        new Chicks(),
+        new Chicks(),
+      ],
+      [new Endboss()],
+      [
+        new Cloud(),
+        new Cloud(),
+        new Cloud(),
+        new Cloud(),
+        new Cloud(),
+        new Cloud(),
+      ],
+      [
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/air.png", -719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/3_third_layer/2.png", -719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/2_second_layer/2.png", -719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/1_first_layer/2.png", -719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/air.png", 0),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/3_third_layer/1.png", 0),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/2_second_layer/1.png", 0),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/1_first_layer/1.png", 0),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/air.png", 719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/3_third_layer/2.png", 719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/2_second_layer/2.png", 719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/1_first_layer/2.png", 719),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/air.png", 719 * 2),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/3_third_layer/1.png", 719 * 2),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/2_second_layer/1.png", 719 * 2),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/1_first_layer/1.png", 719 * 2),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/air.png", 719 * 3),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/3_third_layer/2.png", 719 * 3),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/2_second_layer/2.png", 719 * 3),
+        new BackgroundObject("img_pollo_locco/img/5_background/layers/1_first_layer/2.png", 719 * 3),
+      ],
+      [
+        new Coins(), new Coins(), new Coins(), new Coins(), new Coins(),
+        new Coins(), new Coins(), new Coins(), new Coins(), new Coins(),
+      ],
+      [
+        new Bottles(), new Bottles(), new Bottles(), new Bottles(), new Bottles(),
+        new Bottles(), new Bottles(), new Bottles(), new Bottles(), new Bottles(),
+      ]
+    );
+  }
+
+/**
+ * Initializes the canvas and draws the start image.
+ */
+  window.onload = function () {
+    canvas = document.getElementById("gameCanvas");
+    ctx = canvas.getContext("2d");
+    startImage.onload = function () {
+      ctx.drawImage(startImage, 0, 0, canvas.width, canvas.height);
+    };
+    checkAssetsAndEnableButton();
+  };
+
+/**
+ * Periodically checks if Hubs and Level data are available.
+ */
+  function checkAssetsAndEnableButton() {
+    const checkInterval = setInterval(() => {
+      if (typeof ImageHub !== 'undefined' &amp;&amp; typeof AudioHub !== 'undefined' &amp;&amp; typeof level1 !== 'undefined') {
+        const btn = document.getElementById("startBtn");
+        if (btn) {
+          btn.disabled = false;
+          btn.style.opacity = "1";
+          btn.style.cursor = "pointer";
+          btn.innerText = "play";
+          isReadyToStart = true;
+          clearInterval(checkInterval); 
+        }
+      }
+    }, 200); 
+  }
+  
+  document.addEventListener("fullscreenchange", handleFullscreenChange);
+  document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+
+/**
+ * Handles the transition to and from fullscreen mode.
+ */
+  function handleFullscreenChange() {
+    const btn = document.getElementById("fullScreenBtn");
+    if (document.fullscreenElement) {
+      isFullscreen = true;
+      btn.textContent = "❌";
+    } else {
+      isFullscreen = false;
+      btn.textContent = "📺";
+    }
+  }
+
+/**
+ * Initializes the game by creating the level and world.
+ */
+  function init() {
+    const level = createLevel1();
+    world = new World(canvas, keyboard, level);
+  }
+
+/**
+ * Hides the start button.
+ */
+  function hideStartButton() {
+    document.getElementById("startBtn")?.classList.add("d-none");
+  }
+
+/**
+ * Shows all game controls.
+ */
+  function showGameControls() {
+    showDesktopButtons();
+    updateMobileControlsVisibility();
+  }
+
+/**
+ * Shows desktop control buttons.
+ */
+  function showDesktopButtons() {
+    document.getElementById("muteBtn").classList.remove("d-none");
+    document.getElementById("restartBtn").classList.remove("d-none");
+    document.getElementById("homeBtn").classList.remove("d-none");
+    document.getElementById("fullScreenBtn").classList.remove("d-none");
+    document.getElementById("toggleControlsBtn").classList.remove("d-none");
+  }
+
+/**
+ * Clears the canvas.
+ */
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+/**
+ * Starts the background music.
+ */
+  function startBackgroundMusic() {
+    AudioHub.backgroundMusic.loop = true;
+    AudioHub.backgroundMusic.volume = 0.1;
+    AudioHub.backgroundMusic.play();
+  }
+
+/**
+ * Starts the game: hides start button, clears canvas, initializes world and music.
+ */
+  function startGame() {
+    if (!isReadyToStart) return;
+    hideStartButton();
+    clearCanvas();
+    init();
+    startBackgroundMusic();
+    showGameControls();
+    initializeMuteButton();
+  }
+
+  let buttonsActive = false;
+
+  window.addEventListener("keydown", (e) => {
+    if (buttonsActive) return;
+    if (e.keyCode == 39) keyboard.RIGHT = true;
+    if (e.keyCode == 37) keyboard.LEFT = true;
+    if (e.keyCode == 38) keyboard.UP = true;
+    if (e.keyCode == 40) keyboard.DOWN = true;
+    if (e.keyCode == 32) keyboard.SPACE = true;
+    if (e.keyCode == 68) keyboard.D = true;
+  });
+
+  window.addEventListener("keyup", (e) => {
+    if (buttonsActive) return;
+    if (e.keyCode == 39) keyboard.RIGHT = false;
+    if (e.keyCode == 37) keyboard.LEFT = false;
+    if (e.keyCode == 38) keyboard.UP = false;
+    if (e.keyCode == 40) keyboard.DOWN = false;
+    if (e.keyCode == 32) keyboard.SPACE = false;
+    if (e.keyCode == 68) keyboard.D = false;
+  });
+
+/**
+ * Adds start and end event listeners to a button.
+ */
+  function addButtonListeners(btn, startHandler, endHandler) {
+    ["touchstart", "mousedown"].forEach((evt) =>
+      btn.addEventListener(evt, startHandler)
+    );
+    ["touchend", "mouseup", "touchcancel", "mouseleave"].forEach((evt) =>
+      btn.addEventListener(evt, endHandler)
+    );
+  }
+
+/**
+ * Shows the losing screen and stops all intervals after a delay.
+ */
+  function showLosingScreen() {
+    document.getElementById("loosingScreen").classList.remove("d-none");
+    setTimeout(() => {
+      IntervalHub.stopAllIntervals();
+    }, 1000);
+  }
+
+/**
+ * Hides the losing screen.
+ */
+  function hideLosingScreen() {
+    document.getElementById("loosingScreen").classList.add("d-none");
+  }
+
+/**
+ * Shows the winning screen and stops all intervals after a delay.
+ */
+  function showWinningScreen() {
+    document.getElementById("winningScreen").classList.remove("d-none");
+    setTimeout(() => {
+      IntervalHub.stopAllIntervals();
+    }, 1000);
+  }
+
+/**
+ * Hides the winning screen and stops all intervals.
+ */
+  function hideWinningScreen() {
+    document.getElementById("winningScreen").classList.add("d-none");
+    IntervalHub.stopAllIntervals();
+  }
+
+/**
+ * Toggles fullscreen mode for the game canvas.
+ */
+  function goFullscreen() {
+    const fullScreenBtn = document.getElementById("fullScreenBtn");
+    const container = document.querySelector(".canvas-container");
+    const gameState = document.getElementById("loosingScreen");
+    const winningState = document.getElementById("winningScreen");
+    if (!document.fullscreenElement) {
+      container.requestFullscreen();
+      gameState.classList.add("loosing-screen-fullscreen");
+      winningState.classList.add("winning-screen-fullscreen");
+    } else {
+      document.exitFullscreen();
+      gameState.classList.remove("loosing-screen-fullscreen");
+      winningState.classList.remove("winning-screen-fullscreen");
+    }
+    fullScreenBtn.blur();
+  }</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AudioHub.html">AudioHub</a></li><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="Bottles.html">Bottles</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Chicks.html">Chicks</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coins.html">Coins</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="IntervalHub.html">IntervalHub</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="Statusbar.html">Statusbar</a></li><li><a href="StatusbarBoss.html">StatusbarBoss</a></li><li><a href="StatusbarBottle.html">StatusbarBottle</a></li><li><a href="StatusbarCoin.html">StatusbarCoin</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addButtonListeners">addButtonListeners</a></li><li><a href="global.html#bindButton">bindButton</a></li><li><a href="global.html#bindMobileControls">bindMobileControls</a></li><li><a href="global.html#checkAssetsAndEnableButton">checkAssetsAndEnableButton</a></li><li><a href="global.html#checkDeviceOrientation">checkDeviceOrientation</a></li><li><a href="global.html#clearCanvas">clearCanvas</a></li><li><a href="global.html#closeDialog">closeDialog</a></li><li><a href="global.html#closeDialogImpressum">closeDialogImpressum</a></li><li><a href="global.html#createLevel1">createLevel1</a></li><li><a href="global.html#getBoolean">getBoolean</a></li><li><a href="global.html#goFullscreen">goFullscreen</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#handleFullscreenChange">handleFullscreenChange</a></li><li><a href="global.html#handleLandscapeMode">handleLandscapeMode</a></li><li><a href="global.html#handlePortraitMode">handlePortraitMode</a></li><li><a href="global.html#hideLosingScreen">hideLosingScreen</a></li><li><a href="global.html#hideMobileControls">hideMobileControls</a></li><li><a href="global.html#hideStartButton">hideStartButton</a></li><li><a href="global.html#hideWinningScreen">hideWinningScreen</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initializeMuteButton">initializeMuteButton</a></li><li><a href="global.html#isMobileDevice">isMobileDevice</a></li><li><a href="global.html#openDialog">openDialog</a></li><li><a href="global.html#openImpressum">openImpressum</a></li><li><a href="global.html#restartGame">restartGame</a></li><li><a href="global.html#saveBoolean">saveBoolean</a></li><li><a href="global.html#showDesktopButtons">showDesktopButtons</a></li><li><a href="global.html#showGameControls">showGameControls</a></li><li><a href="global.html#showLockScreen">showLockScreen</a></li><li><a href="global.html#showLosingScreen">showLosingScreen</a></li><li><a href="global.html#showMobileControlsIfNeeded">showMobileControlsIfNeeded</a></li><li><a href="global.html#showWinningScreen">showWinningScreen</a></li><li><a href="global.html#startBackgroundMusic">startBackgroundMusic</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#toggleMobileControls">toggleMobileControls</a></li><li><a href="global.html#toggleMute">toggleMute</a></li><li><a href="global.html#updateMobileControlsVisibility">updateMobileControlsVisibility</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Mar 17 2026 11:59:27 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
