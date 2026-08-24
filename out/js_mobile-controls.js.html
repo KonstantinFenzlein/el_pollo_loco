@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: js/mobile-controls.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: js/mobile-controls.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Binds mobile control buttons to keyboard actions.
+ */
+  function bindMobileControls() {
+    const map = {
+      btnRight: "RIGHT",
+      btnLeft: "LEFT",
+      btnJump: "SPACE",
+      btnThrow: "D",
+    };
+    Object.entries(map).forEach(([id, key]) => bindButton(id, key));
+  }
+
+/**
+ * Binds a button element to a keyboard key for mobile controls.
+ */
+  function bindButton(id, key) {
+    const btn = document.getElementById(id);
+    if (!btn) return;
+    const startHandler = (e) => {
+      if (e.cancelable) e.preventDefault();
+      keyboard[key] = true;
+      btn.classList.add("active");
+    };
+    const endHandler = (e) => {
+      if (e.cancelable) e.preventDefault();
+      keyboard[key] = false;
+      btn.classList.remove("active");
+    };
+    addButtonListeners(btn, startHandler, endHandler);
+  }
+
+/**
+ * Initializes mobile controls and hides them on load.
+ */
+  window.addEventListener("DOMContentLoaded", () => {
+    const controls = document.querySelector(".mobile-controls");
+    if (controls) controls.classList.add("d-none");
+    bindMobileControls();
+    buttonsActive = false;
+  });
+
+/**
+ * Checks if the device is a mobile device.
+ * @returns {boolean} True if the device is mobile.
+ */
+  function isMobileDevice() {
+    return window.matchMedia("(pointer: coarse)").matches;
+  }
+
+/**
+ * Hides mobile controls and deactivates buttons.
+ */
+  function hideMobileControls() {
+    const controls = document.querySelector(".mobile-controls");
+    if (controls) controls.classList.add("d-none");
+    buttonsActive = false;
+  }
+
+/**
+ * Shows the device lock screen for portrait mode on mobile.
+ */
+  function showLockScreen() {
+    const lock = document.querySelector(".device-lock");
+    if (lock) lock.classList.add("show");
+    buttonsActive = false;
+    keyboard = new Keyboard();
+    hideMobileControls();
+  }
+
+/**
+ * Shows mobile controls if the user has enabled them.
+ */
+  function showMobileControlsIfNeeded() {
+    const lock = document.querySelector(".device-lock");
+    const mobileControls = document.querySelector(".mobile-controls");
+    if (!lock || !mobileControls) return;
+    lock.classList.remove("show");
+    if (getBoolean("showControls")) {
+      mobileControls.classList.remove("d-none");
+      buttonsActive = true;
+    } else {
+      buttonsActive = false;
+    }
+  }
+
+/**
+ * Handles the UI state when the device is in portrait mode.
+ */
+  function handlePortraitMode(lock, mobileControls) {
+    lock.classList.add("show");
+    keyboard = new Keyboard();
+    if (mobileControls) mobileControls.classList.add("d-none");
+    buttonsActive = false;
+  }
+
+/**
+ * Handles the UI state when the device is in landscape mode or desktop.
+ */
+  function handleLandscapeMode(lock, mobileControls) {
+    lock.classList.remove("show");
+    const shouldShow = world &amp;&amp; getBoolean("showControls");
+    
+    if (shouldShow) {
+      mobileControls?.classList.remove("d-none");
+      buttonsActive = true;
+    } else {
+      mobileControls?.classList.add("d-none");
+      buttonsActive = false;
+    }
+  }
+
+/**
+ * Checks device orientation and adjusts mobile controls and lock screen accordingly.
+ */
+  function checkDeviceOrientation() {
+    const lock = document.querySelector(".device-lock");
+    const mobileControls = document.querySelector(".mobile-controls");
+    
+    if (!lock) return;
+
+    const isPortraitMobile = isMobileDevice() &amp;&amp; window.innerHeight > window.innerWidth;
+
+    if (isPortraitMobile) {
+      handlePortraitMode(lock, mobileControls);
+    } else {
+      handleLandscapeMode(lock, mobileControls);
+    }
+  }
+
+window.addEventListener("resize", checkDeviceOrientation);
+window.addEventListener("orientationchange", checkDeviceOrientation);
+window.addEventListener("DOMContentLoaded", checkDeviceOrientation);
+
+/**
+ * Saves a boolean value in localStorage.
+ */
+  function saveBoolean(key, value) {
+    if (typeof value === "boolean")
+      localStorage.setItem(key, JSON.stringify(value));
+  }
+
+/**
+ * Retrieves a boolean value from localStorage.
+ */
+  function getBoolean(key) {
+    const raw = localStorage.getItem(key);
+    return raw === null ? null : JSON.parse(raw);
+  }
+
+/**
+ * Shows or hides mobile controls based on saved settings.
+ */
+  function updateMobileControlsVisibility() {
+    const controls = document.querySelector(".mobile-controls");
+    if (!controls) return;
+
+    const shouldShow = getBoolean("showControls");
+
+    if (shouldShow) {
+      controls.classList.remove("d-none");
+      buttonsActive = true;
+    } else {
+      controls.classList.add("d-none");
+      buttonsActive = false;
+    }
+  }
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AudioHub.html">AudioHub</a></li><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="Bottles.html">Bottles</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Chicks.html">Chicks</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coins.html">Coins</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="IntervalHub.html">IntervalHub</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="Statusbar.html">Statusbar</a></li><li><a href="StatusbarBoss.html">StatusbarBoss</a></li><li><a href="StatusbarBottle.html">StatusbarBottle</a></li><li><a href="StatusbarCoin.html">StatusbarCoin</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addButtonListeners">addButtonListeners</a></li><li><a href="global.html#bindButton">bindButton</a></li><li><a href="global.html#bindMobileControls">bindMobileControls</a></li><li><a href="global.html#checkAssetsAndEnableButton">checkAssetsAndEnableButton</a></li><li><a href="global.html#checkDeviceOrientation">checkDeviceOrientation</a></li><li><a href="global.html#clearCanvas">clearCanvas</a></li><li><a href="global.html#closeDialog">closeDialog</a></li><li><a href="global.html#closeDialogImpressum">closeDialogImpressum</a></li><li><a href="global.html#createLevel1">createLevel1</a></li><li><a href="global.html#getBoolean">getBoolean</a></li><li><a href="global.html#goFullscreen">goFullscreen</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#handleFullscreenChange">handleFullscreenChange</a></li><li><a href="global.html#handleLandscapeMode">handleLandscapeMode</a></li><li><a href="global.html#handlePortraitMode">handlePortraitMode</a></li><li><a href="global.html#hideLosingScreen">hideLosingScreen</a></li><li><a href="global.html#hideMobileControls">hideMobileControls</a></li><li><a href="global.html#hideStartButton">hideStartButton</a></li><li><a href="global.html#hideWinningScreen">hideWinningScreen</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initializeMuteButton">initializeMuteButton</a></li><li><a href="global.html#isMobileDevice">isMobileDevice</a></li><li><a href="global.html#openDialog">openDialog</a></li><li><a href="global.html#openImpressum">openImpressum</a></li><li><a href="global.html#restartGame">restartGame</a></li><li><a href="global.html#saveBoolean">saveBoolean</a></li><li><a href="global.html#showDesktopButtons">showDesktopButtons</a></li><li><a href="global.html#showGameControls">showGameControls</a></li><li><a href="global.html#showLockScreen">showLockScreen</a></li><li><a href="global.html#showLosingScreen">showLosingScreen</a></li><li><a href="global.html#showMobileControlsIfNeeded">showMobileControlsIfNeeded</a></li><li><a href="global.html#showWinningScreen">showWinningScreen</a></li><li><a href="global.html#startBackgroundMusic">startBackgroundMusic</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#toggleMobileControls">toggleMobileControls</a></li><li><a href="global.html#toggleMute">toggleMute</a></li><li><a href="global.html#updateMobileControlsVisibility">updateMobileControlsVisibility</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Mar 17 2026 11:59:27 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
