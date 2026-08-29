@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/audiohub.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/audiohub.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * class Audiohub
+ */
+
+  class AudioHub {
+    static isMuted = false;
+    static backgroundMusic = new Audio(
+      "./sounds/backgroundmusic/acoustic-mexican-guitar-218610.mp3"
+    );
+
+    static characterDamage = new Audio("./sounds/character/characterDamage.mp3");
+    static characterDead = new Audio("./sounds/character/characterDead.wav");
+    static characterJump = new Audio("./sounds/character/characterJump.wav");
+    static characterRun = new Audio("./sounds/character/characterRun.mp3");
+    static characterSnoring = new Audio(
+      "./sounds/character/characterSnoring.mp3"
+    );
+
+    static chickenDead = new Audio("./sounds/chicken/chickenDead.mp3");
+    static chickenDead2 = new Audio("./sounds/chicken/chickenDead2.mp3");
+
+    static bottleCollectSound = new Audio(
+      "./sounds/collectibles/bottleCollectSound.wav"
+    );
+    static coinCollectSound = new Audio("./sounds/collectibles/collectSound.wav");
+
+    static bottleBreak = new Audio("./sounds/throwable/bottleBreak.mp3");
+
+    static endbossSound = new Audio("./sounds/endboss/endbossApproach.wav");
+    static endbossIdle = new Audio("./sounds/endboss/chickenIdle.mp3");
+    static endbossDeath = new Audio("./sounds/endboss/endbossDeath.mp3");
+
+    static gameStart = new Audio("./sounds/game/gameStart.mp3");
+
+    static allSounds = [
+      AudioHub.characterDamage,
+      AudioHub.characterDead,
+      AudioHub.characterJump,
+      AudioHub.characterRun,
+      AudioHub.characterSnoring,
+      AudioHub.chickenDead,
+      AudioHub.chickenDead2,
+      AudioHub.bottleCollectSound,
+      AudioHub.coinCollectSound,
+      AudioHub.bottleBreak,
+      AudioHub.endbossSound,
+      AudioHub.endbossDeath,
+      AudioHub.endbossIdle,
+      AudioHub.gameStart,
+      AudioHub.backgroundMusic,
+    ];
+
+    /**
+     * Plays a single audio sound if the system is not muted.
+     * Resets the sound to the beginning and sets volume to 0.2.
+     * @param {HTMLAudioElement} sound - The audio element to play.
+     */
+    static playOne(sound) {
+      if (!AudioHub.isMuted) {
+        sound.volume = 0.2;
+        sound.currentTime = 0;
+        sound.play();
+      }
+    }
+
+    /**
+     * Stops and resets all audio sounds.
+     */
+    static stopAll() {
+      AudioHub.allSounds.forEach((sound) => {
+        sound.pause();
+        sound.currentTime = 0;
+      });
+    }
+
+    /**
+     * Stops a single audio sound.
+     * @param {HTMLAudioElement} sound - The audio element to stop.
+     */
+    static stopOne(sound) {
+      sound.pause();
+    }
+
+    /**
+     * Mutes all sounds and sets the volume of every audio element to 0.
+     */
+    static mute() {
+      AudioHub.isMuted = true;
+      AudioHub.allSounds.forEach((sound) => {
+        sound.volume = 0.0;
+      });
+    }
+
+    /**
+     * Unmutes all sounds and sets the volume of every audio element to 0.2.
+     */
+    static unmute() {
+      AudioHub.isMuted = false;
+      AudioHub.allSounds.forEach((sound) => {
+        sound.volume = 0.2;
+      });
+      if (AudioHub.backgroundMusic.paused) {
+        AudioHub.backgroundMusic.loop = true;
+        AudioHub.backgroundMusic.play().catch(e => console.warn("Autoplay blockiert"));
+      }
+    }
+  }</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AudioHub.html">AudioHub</a></li><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="Bottles.html">Bottles</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Chicks.html">Chicks</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coins.html">Coins</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="IntervalHub.html">IntervalHub</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="Statusbar.html">Statusbar</a></li><li><a href="StatusbarBoss.html">StatusbarBoss</a></li><li><a href="StatusbarBottle.html">StatusbarBottle</a></li><li><a href="StatusbarCoin.html">StatusbarCoin</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addButtonListeners">addButtonListeners</a></li><li><a href="global.html#bindButton">bindButton</a></li><li><a href="global.html#bindMobileControls">bindMobileControls</a></li><li><a href="global.html#checkAssetsAndEnableButton">checkAssetsAndEnableButton</a></li><li><a href="global.html#checkDeviceOrientation">checkDeviceOrientation</a></li><li><a href="global.html#clearCanvas">clearCanvas</a></li><li><a href="global.html#closeDialog">closeDialog</a></li><li><a href="global.html#closeDialogImpressum">closeDialogImpressum</a></li><li><a href="global.html#createLevel1">createLevel1</a></li><li><a href="global.html#getBoolean">getBoolean</a></li><li><a href="global.html#goFullscreen">goFullscreen</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#handleFullscreenChange">handleFullscreenChange</a></li><li><a href="global.html#handleLandscapeMode">handleLandscapeMode</a></li><li><a href="global.html#handlePortraitMode">handlePortraitMode</a></li><li><a href="global.html#hideLosingScreen">hideLosingScreen</a></li><li><a href="global.html#hideMobileControls">hideMobileControls</a></li><li><a href="global.html#hideStartButton">hideStartButton</a></li><li><a href="global.html#hideWinningScreen">hideWinningScreen</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initializeMuteButton">initializeMuteButton</a></li><li><a href="global.html#isMobileDevice">isMobileDevice</a></li><li><a href="global.html#openDialog">openDialog</a></li><li><a href="global.html#openImpressum">openImpressum</a></li><li><a href="global.html#restartGame">restartGame</a></li><li><a href="global.html#saveBoolean">saveBoolean</a></li><li><a href="global.html#showDesktopButtons">showDesktopButtons</a></li><li><a href="global.html#showGameControls">showGameControls</a></li><li><a href="global.html#showLockScreen">showLockScreen</a></li><li><a href="global.html#showLosingScreen">showLosingScreen</a></li><li><a href="global.html#showMobileControlsIfNeeded">showMobileControlsIfNeeded</a></li><li><a href="global.html#showWinningScreen">showWinningScreen</a></li><li><a href="global.html#startBackgroundMusic">startBackgroundMusic</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#toggleMobileControls">toggleMobileControls</a></li><li><a href="global.html#toggleMute">toggleMute</a></li><li><a href="global.html#updateMobileControlsVisibility">updateMobileControlsVisibility</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Mar 17 2026 11:59:27 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
