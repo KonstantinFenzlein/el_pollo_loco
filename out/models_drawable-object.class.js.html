@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/drawable-object.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/drawable-object.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * class DrawableObject
+ */
+  class DrawableObject {
+    x = 120;
+    y = 330;
+    width = 120;
+    height = 50;
+    img;
+    imageCache = [];
+    currentImage = 0;
+
+    offset = {
+      top: 10,
+      right: 10,
+      bottom: 10,
+      left: 10,
+    };
+
+    realX;
+    realY;
+    realWidth;
+    realHeight;
+
+    constructor() {
+      IntervalHub.startInterval(this.getRealFrame, 1000 / 60);
+    }
+
+    /** Updates the real position and size of the object considering its offsets. */
+    getRealFrame = () => {
+      this.realX = this.x + this.offset.left;
+      this.realY = this.y + this.offset.top;
+      this.realWidth = this.width - this.offset.left - this.offset.right;
+      this.realHeight = this.height - this.offset.top - this.offset.bottom;
+    };
+
+    /**
+     * Checks if this object is colliding with another DrawableObject.
+     * @param {DrawableObject} mo - The other object to check collision against.
+     * @returns {boolean} True if the objects are colliding, otherwise false.
+     */
+    isColliding(mo) {
+      return (
+        this.realX + this.realWidth > mo.realX &amp;&amp;
+        this.realY + this.realHeight > mo.realY &amp;&amp;
+        this.realX &lt; mo.realX + mo.realWidth &amp;&amp;
+        this.realY &lt; mo.realY + mo.realHeight
+      );
+    }
+
+    /**
+     * Loads a single image into this object.
+     * @param {string} path - The path to the image file.
+     */
+    loadImg(path) {
+      this.img = new Image();
+      this.img.src = path;
+    }
+
+    /**
+     * Loads multiple images and stores them in the image cache.
+     * @param {string[]} arr - Array of image paths to load.
+     */
+    loadImages(arr) {
+      arr.forEach((path) => {
+        let img = new Image();
+        img.src = path;
+        this.imageCache[path] = img;
+      });
+    }
+
+    /**
+     * Draws the object's current image on the given canvas context.
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+     */
+    draw(ctx) {
+      ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
+    }
+
+    /**
+     * Placeholder for drawing a frame around the object (e.g., for debugging).
+     * @param {CanvasRenderingContext2D} ctx - The canvas rendering context.
+     */
+    drawFrame(ctx) {}
+  }</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AudioHub.html">AudioHub</a></li><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="Bottles.html">Bottles</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Chicks.html">Chicks</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coins.html">Coins</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="IntervalHub.html">IntervalHub</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="Statusbar.html">Statusbar</a></li><li><a href="StatusbarBoss.html">StatusbarBoss</a></li><li><a href="StatusbarBottle.html">StatusbarBottle</a></li><li><a href="StatusbarCoin.html">StatusbarCoin</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addButtonListeners">addButtonListeners</a></li><li><a href="global.html#bindButton">bindButton</a></li><li><a href="global.html#bindMobileControls">bindMobileControls</a></li><li><a href="global.html#checkAssetsAndEnableButton">checkAssetsAndEnableButton</a></li><li><a href="global.html#checkDeviceOrientation">checkDeviceOrientation</a></li><li><a href="global.html#clearCanvas">clearCanvas</a></li><li><a href="global.html#closeDialog">closeDialog</a></li><li><a href="global.html#closeDialogImpressum">closeDialogImpressum</a></li><li><a href="global.html#createLevel1">createLevel1</a></li><li><a href="global.html#getBoolean">getBoolean</a></li><li><a href="global.html#goFullscreen">goFullscreen</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#handleFullscreenChange">handleFullscreenChange</a></li><li><a href="global.html#handleLandscapeMode">handleLandscapeMode</a></li><li><a href="global.html#handlePortraitMode">handlePortraitMode</a></li><li><a href="global.html#hideLosingScreen">hideLosingScreen</a></li><li><a href="global.html#hideMobileControls">hideMobileControls</a></li><li><a href="global.html#hideStartButton">hideStartButton</a></li><li><a href="global.html#hideWinningScreen">hideWinningScreen</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initializeMuteButton">initializeMuteButton</a></li><li><a href="global.html#isMobileDevice">isMobileDevice</a></li><li><a href="global.html#openDialog">openDialog</a></li><li><a href="global.html#openImpressum">openImpressum</a></li><li><a href="global.html#restartGame">restartGame</a></li><li><a href="global.html#saveBoolean">saveBoolean</a></li><li><a href="global.html#showDesktopButtons">showDesktopButtons</a></li><li><a href="global.html#showGameControls">showGameControls</a></li><li><a href="global.html#showLockScreen">showLockScreen</a></li><li><a href="global.html#showLosingScreen">showLosingScreen</a></li><li><a href="global.html#showMobileControlsIfNeeded">showMobileControlsIfNeeded</a></li><li><a href="global.html#showWinningScreen">showWinningScreen</a></li><li><a href="global.html#startBackgroundMusic">startBackgroundMusic</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#toggleMobileControls">toggleMobileControls</a></li><li><a href="global.html#toggleMute">toggleMute</a></li><li><a href="global.html#updateMobileControlsVisibility">updateMobileControlsVisibility</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Mar 17 2026 11:59:27 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
