@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: models/movable-object.class.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: models/movable-object.class.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * class MovableObject
+ * extends DrawableObject
+ */
+  class MovableObject extends DrawableObject {
+    currentImage = 0;
+    speed = 0.15;
+    otherDirection = false;
+    speedY = 0;
+    acceleration = 2.5;
+    energy = 100;
+    lastHit = 0;
+    bottleCount = 0;
+    coinCount = 0;
+    lastMove = Date.now();
+
+    currentJump = 0;
+
+    /** Starts animation for enemies. */
+    startEnemiesRun() {
+      this.animate();
+    }
+
+    /**
+     * Plays animation by cycling through an array of images.
+     * @param {string[]} images - Array of image paths.
+     */
+    playAnimation(images) {
+      let i = this.currentImage % images.length;
+      let path = images[i];
+      this.img = this.imageCache[path];
+      this.currentImage++;
+    }
+
+    /** Applies gravity to the object over time. */
+    applyGravity() {
+      setInterval(() => {
+        if (this.splashed || this.targetHit) {
+          return;
+        }
+        if (this.isAboveGround() || this.speedY > 0) {
+          this.y -= this.speedY;
+          this.speedY -= this.acceleration;
+        }
+      }, 1000 / 25);
+    }
+
+    /** Determines if the object is above ground. */
+    isAboveGround() {
+      if (this instanceof ThrowableObject) {
+        return true;
+      }
+      return this.y &lt; 130;
+    }
+
+    /** Reduces energy when hit and plays damage sound. */
+    hit() {
+      this.energy -= 0.5;
+      if (this.energy &lt; 0) {
+        this.energy = 0;
+      } else {
+        this.lastHit = new Date().getTime();
+      }
+      AudioHub.playOne(AudioHub.characterDamage);
+    }
+
+    /** Reduces boss energy when hit and temporarily sets isHurt. */
+    hitBoss() {
+      if (this.isHurt || this.dead) return;
+
+      this.energy -= 20;
+      if (this.energy &lt; 0) this.energy = 0;
+
+      this.isHurt = true;
+
+      setTimeout(() => {
+        this.isHurt = false;
+      }, 400);
+    }
+
+    /** Returns true if the object was hit within the last second. */
+    isHurt() {
+      let timePassed = new Date().getTime() - this.lastHit;
+      timePassed = timePassed / 1000;
+      return timePassed &lt; 1;
+    }
+
+    /** Returns true if the object is dead (energy is 0). */
+    isDead() {
+      return this.energy == 0;
+    }
+
+    /** Collects a bottle and plays collection sound. */
+    collect() {
+      AudioHub.playOne(AudioHub.bottleCollectSound);
+      this.bottleCount++;
+      if (this.bottleCount >= 10) {
+        this.bottleCount = 10;
+      }
+    }
+
+    /** Collects a coin and plays collection sound. */
+    collectCoin() {
+      AudioHub.playOne(AudioHub.coinCollectSound);
+      this.coinCount++;
+      if (this.coinCount >= 10) {
+        this.coinCount = 10;
+      }
+    }
+
+    /** Moves the object to the right. */
+    moveRight() {
+      this.x += this.speed;
+      this.lastMove = Date.now();
+    }
+
+    /** Moves the object to the left. */
+    moveLeft() {
+      this.x -= this.speed;
+      this.lastMove = Date.now();
+    }
+
+    /** Makes the object jump by setting vertical speed. */
+    jump() {
+      this.speedY = 30;
+      this.lastMove = Date.now();
+    }
+
+    /** Returns true if the object has been idle for more than 10 seconds. */
+    isSleeping() {
+      return Date.now() - this.lastMove > 10000;
+    }
+
+    /** Handles object death and plays random death sound. */
+    die() {
+      if (this.dead || this.isDying) return;
+
+      this.isDying = true;
+
+      const sound =
+        Math.random() &lt; 0.5 ? AudioHub.chickenDead : AudioHub.chickenDead2;
+      AudioHub.playOne(sound);
+
+      setTimeout(() => {
+        this.dead = true;
+      }, 1000);
+    }
+  }</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AudioHub.html">AudioHub</a></li><li><a href="BackgroundObject.html">BackgroundObject</a></li><li><a href="Bottles.html">Bottles</a></li><li><a href="Character.html">Character</a></li><li><a href="Chicken.html">Chicken</a></li><li><a href="Chicks.html">Chicks</a></li><li><a href="Cloud.html">Cloud</a></li><li><a href="Coins.html">Coins</a></li><li><a href="DrawableObject.html">DrawableObject</a></li><li><a href="Endboss.html">Endboss</a></li><li><a href="IntervalHub.html">IntervalHub</a></li><li><a href="Keyboard.html">Keyboard</a></li><li><a href="Level.html">Level</a></li><li><a href="MovableObject.html">MovableObject</a></li><li><a href="Statusbar.html">Statusbar</a></li><li><a href="StatusbarBoss.html">StatusbarBoss</a></li><li><a href="StatusbarBottle.html">StatusbarBottle</a></li><li><a href="StatusbarCoin.html">StatusbarCoin</a></li><li><a href="ThrowableObject.html">ThrowableObject</a></li><li><a href="World.html">World</a></li></ul><h3>Global</h3><ul><li><a href="global.html#addButtonListeners">addButtonListeners</a></li><li><a href="global.html#bindButton">bindButton</a></li><li><a href="global.html#bindMobileControls">bindMobileControls</a></li><li><a href="global.html#checkAssetsAndEnableButton">checkAssetsAndEnableButton</a></li><li><a href="global.html#checkDeviceOrientation">checkDeviceOrientation</a></li><li><a href="global.html#clearCanvas">clearCanvas</a></li><li><a href="global.html#closeDialog">closeDialog</a></li><li><a href="global.html#closeDialogImpressum">closeDialogImpressum</a></li><li><a href="global.html#createLevel1">createLevel1</a></li><li><a href="global.html#getBoolean">getBoolean</a></li><li><a href="global.html#goFullscreen">goFullscreen</a></li><li><a href="global.html#goHome">goHome</a></li><li><a href="global.html#handleFullscreenChange">handleFullscreenChange</a></li><li><a href="global.html#handleLandscapeMode">handleLandscapeMode</a></li><li><a href="global.html#handlePortraitMode">handlePortraitMode</a></li><li><a href="global.html#hideLosingScreen">hideLosingScreen</a></li><li><a href="global.html#hideMobileControls">hideMobileControls</a></li><li><a href="global.html#hideStartButton">hideStartButton</a></li><li><a href="global.html#hideWinningScreen">hideWinningScreen</a></li><li><a href="global.html#init">init</a></li><li><a href="global.html#initializeMuteButton">initializeMuteButton</a></li><li><a href="global.html#isMobileDevice">isMobileDevice</a></li><li><a href="global.html#openDialog">openDialog</a></li><li><a href="global.html#openImpressum">openImpressum</a></li><li><a href="global.html#restartGame">restartGame</a></li><li><a href="global.html#saveBoolean">saveBoolean</a></li><li><a href="global.html#showDesktopButtons">showDesktopButtons</a></li><li><a href="global.html#showGameControls">showGameControls</a></li><li><a href="global.html#showLockScreen">showLockScreen</a></li><li><a href="global.html#showLosingScreen">showLosingScreen</a></li><li><a href="global.html#showMobileControlsIfNeeded">showMobileControlsIfNeeded</a></li><li><a href="global.html#showWinningScreen">showWinningScreen</a></li><li><a href="global.html#startBackgroundMusic">startBackgroundMusic</a></li><li><a href="global.html#startGame">startGame</a></li><li><a href="global.html#toggleMobileControls">toggleMobileControls</a></li><li><a href="global.html#toggleMute">toggleMute</a></li><li><a href="global.html#updateMobileControlsVisibility">updateMobileControlsVisibility</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.5</a> on Tue Mar 17 2026 11:59:27 GMT+0100 (Mitteleuropäische Normalzeit)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
